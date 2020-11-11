@@ -6,9 +6,19 @@ import (
 	"os"
 
 	"github.com/juanpablopizarro/tudai-rest/internal/config"
+	"github.com/juanpablopizarro/tudai-rest/internal/service/chat"
 )
 
 func main() {
+	cfg := readConfig()
+	service, _ := chat.New(cfg)
+
+	for _, m := range service.FindAll() {
+		fmt.Println(m)
+	}
+}
+
+func readConfig() *config.Config {
 	configFile := flag.String("config", "./config.yaml", "this is the service config")
 	flag.Parse()
 
@@ -18,7 +28,5 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println(cfg.DB.Driver)
-	fmt.Println(cfg.Version)
-
+	return cfg
 }
