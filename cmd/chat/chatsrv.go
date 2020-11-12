@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	"github.com/juanpablopizarro/tudai-rest/internal/config"
 	"github.com/juanpablopizarro/tudai-rest/internal/database"
@@ -16,21 +17,19 @@ func main() {
 	cfg := readConfig()
 
 	db, err := database.NewDatabase(cfg)
+	defer db.Close()
+
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
-	if err := createSchema(db); err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-
 	service, _ := chat.New(db, cfg)
+	httpService := chat.NewHTTPTransport(service)
 
-	for _, m := range service.FindAll() {
-		fmt.Println(m)
-	}
+	r := gin.Default()
+	httpService.Register(r)
+	r.Run()
 }
 
 func readConfig() *config.Config {
