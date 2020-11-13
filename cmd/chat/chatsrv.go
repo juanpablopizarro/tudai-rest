@@ -14,7 +14,10 @@ import (
 )
 
 func main() {
-	cfg := readConfig()
+	configFile := flag.String("config", "./config.yaml", "this is the service config")
+	flag.Parse()
+
+	cfg := config.LoadConfig(*configFile)
 
 	db, err := database.NewDatabase(cfg)
 	defer db.Close()
@@ -30,19 +33,6 @@ func main() {
 	r := gin.Default()
 	httpService.Register(r)
 	r.Run()
-}
-
-func readConfig() *config.Config {
-	configFile := flag.String("config", "./config.yaml", "this is the service config")
-	flag.Parse()
-
-	cfg, err := config.LoadConfig(*configFile)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-
-	return cfg
 }
 
 func createSchema(db *sqlx.DB) error {
